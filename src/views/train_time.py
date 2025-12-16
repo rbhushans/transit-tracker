@@ -11,9 +11,12 @@ def draw_train_time(draw, y: int, trains: list) -> None:
     mins = str(trains[0]['minutes'])
     bw = draw.textbbox((0, 0), mins, font=big_font)[2]
 
-    ty = y + constants.SCREEN_HEIGHT - y - constants.TIME_BOTTOM_OFFSET
-    draw.text((constants.TIME_LEFT_PADDING, ty), mins, font=big_font, fill=0)
-    draw.text((constants.TIME_LEFT_PADDING + bw + 6, ty + 40), "min", font=min_font, fill=0)
+    main_h = constants.SCREEN_HEIGHT - y - constants.MAIN_BOTTOM_PADDING
+    ty = y + main_h - constants.TIME_BOTTOM_OFFSET
+    left_x = constants.PADDING + constants.TIME_LEFT_PADDING
+    draw.text((left_x, ty), mins, font=big_font, fill=0)
+    draw.text((left_x + bw + 6, ty + 40), "min", font=min_font, fill=0)
 
     if len(trains) > 1:
-        draw.text((constants.TIME_SECONDARY_X, ty + 40), f"{trains[1]['minutes']} min", font=min_font, fill=0)
+        secondary_x = constants.PADDING + constants.TIME_SECONDARY_X
+        draw.text((secondary_x, ty + 40), f"{trains[1]['minutes']} min", font=min_font, fill=0)
