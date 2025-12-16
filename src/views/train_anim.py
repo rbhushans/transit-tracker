@@ -1,5 +1,5 @@
 
-import constants
+from .. import constants
 import datetime
 from ..utils.draw_utils import draw_train_icon
 
