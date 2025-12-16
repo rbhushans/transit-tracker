@@ -1,5 +1,6 @@
 
 from .. import constants
+from .. import config
 import datetime
 from ..utils.draw_utils import draw_train_icon
 
@@ -24,9 +25,9 @@ def draw_train_anim(draw, y: int, trains: list) -> int:
         draw.line([x, line_y, x + 2, line_y], fill=0)
 
     for t in trains:
-        if t['minutes'] > constants.MAX_TRAIN_MINUTES:
+        if t['minutes'] > config.MAX_TRAIN_MINUTES:
             continue
-        ratio = t['minutes'] / constants.MAX_TRAIN_MINUTES
+        ratio = t['minutes'] / config.MAX_TRAIN_MINUTES
         cx = end_x - ratio * (end_x - start_x)
         cx = max(start_x + constants.TRAIN_ICON_BASE_OFFSET, min(cx, end_x))
         draw_train_icon(draw, cx, line_y - constants.TRAIN_ICON_BASE_OFFSET)
