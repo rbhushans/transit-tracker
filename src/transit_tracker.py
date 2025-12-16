@@ -2,7 +2,7 @@
 
 import time
 from PIL import Image, ImageDraw
-from waveshare_epd import epd4in2_V2
+from .waveshare_epd import epd4in2_V2
 
 from . import config
 from .data.data_fetcher import fetch_trains
