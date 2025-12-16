@@ -3,12 +3,19 @@
 import time
 from PIL import Image, ImageDraw
 from .waveshare_epd import epd4in2_V2
+import RPi.GPIO as GPIO
+
+
 
 from . import config
 from . import constants
 from .data.data_fetcher import fetch_trains
 from .views import header, train_anim, train_time, footer
 
+# sleep button
+GPIO.setmode(GPIO.BOARD)
+SLEEP_BTN_PIN = 40
+GPIO.setup(SLEEP_BTN_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 def draw_dashboard(epd, trains, refresh_seconds):
     image = Image.new('1', (constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT), 255)
@@ -31,6 +38,11 @@ def draw_dashboard(epd, trains, refresh_seconds):
 
     return image
 
+def sleep_display(epd):
+    epd.init()
+    epd.Clear()
+    time.sleep(0.5)
+    epd.sleep()
 
 def main():
     epd = epd4in2_V2.EPD()
@@ -39,9 +51,28 @@ def main():
 
     last_api_fetch = time.time()
     trains = fetch_trains()
+    display_awake = True  
 
     try:
         while True:
+            if GPIO.input(SLEEP_BTN_PIN) == GPIO.LOW:
+                # debounce
+                time.sleep(0.1)
+                if GPIO.input(SLEEP_BTN_PIN) == GPIO.LOW:
+                    display_awake = not display_awake
+                    if display_awake:
+                        epd.init()
+                        epd.Clear()
+                    else:
+                        sleep_display(epd)
+                    # avoid multiple toggles
+                    time.sleep(0.5)
+
+            # asleep, don't update
+            if not display_awake:
+                time.sleep(0.5)
+                continue  
+
             now = time.time()
             elapsed = int(now - last_api_fetch)
 
@@ -62,12 +93,8 @@ def main():
         print("Exiting... putting display to sleep")
 
     finally:
-        epd.init()
-        epd.Clear() 
-
-        time.sleep(0.5)
-
-        epd.sleep()
+        sleep_display(epd)
+        GPIO.cleanup()  
 
 
 if __name__ == "__main__":

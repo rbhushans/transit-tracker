@@ -55,10 +55,10 @@ At this point, you are able to SSH into the pi at any time. Now, turn off the pi
 
 First, align your pi in "portrait", where the pins are to the right, and the power-in is to the left, and the SD card slot is to the top. In this orientation, you will see 2 columns of 20 pins each. Pin numbering is left to right, top to bottom:
 
-1 2
-3 4
-5 6
-...
+1 2 \
+3 4 \
+5 6 \
+... \
 39 40
 
 Plugin the 8-pin cable into your display first. Make sure to push it in ALL the way - you'll face some resistance but it can, and must, go all the way in. Note that each colored cable now maps to a different code (e.g. VCC, BUSY, etc).
