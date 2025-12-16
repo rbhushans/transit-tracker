@@ -63,6 +63,8 @@ def refresh_button_callback(channel):
 
 def main():
     global epd
+    global display_awake
+    global manual_refresh
     epd = epd4in2_V2.EPD()
     epd.init()
     epd.Clear()
