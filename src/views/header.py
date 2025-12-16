@@ -4,8 +4,8 @@ from PIL import ImageFont
 import datetime
 
 def _draw_line_logo(draw, cx: int, cy: int) -> None:
-    n_font = ImageFont.truetype(constants.FONT_PATH_BOLD, constants.HEADER_N_FONT_SIZE)
-    bbox = draw.textbbox((0, 0), config.HEADER_N_LABEL, font=n_font)
+    n_font = ImageFont.truetype(constants.FONT_PATH_BOLD, constants.HEADER_FONT_SIZE)
+    bbox = draw.textbbox((0, 0), config.HEADER_LABEL, font=n_font)
     ascent, _ = n_font.getmetrics()
     text_h = bbox[3] - bbox[1]
 
@@ -19,7 +19,7 @@ def _draw_line_logo(draw, cx: int, cy: int) -> None:
     draw.text(
         (cx - (bbox[2] - bbox[0]) // 2,
          cy - text_h // 2 - ascent // 6 - 2),
-    config.HEADER_N_LABEL,
+    config.HEADER_LABEL,
         font=n_font,
         fill=0,
     )

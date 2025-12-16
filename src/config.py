@@ -13,5 +13,5 @@ REFRESH_INTERVAL = 75
 # The maximum number of minutes to show for incoming trains on the train animation
 MAX_TRAIN_MINUTES = 10
 
-HEADER_N_LABEL = "N"
+HEADER_LABEL = "N"
 HEADER_DESTINATION_LABEL = "downtown"
