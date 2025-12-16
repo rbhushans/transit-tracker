@@ -12,12 +12,17 @@ from . import constants
 from .data.data_fetcher import fetch_trains
 from .views import header, train_anim, train_time, footer
 
-# sleep button
-GPIO.setmode(GPIO.BOARD)
-SLEEP_BTN_PIN = 40
-GPIO.setup(SLEEP_BTN_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+SLEEP_BUTTON_PIN = 40  
+REFRESH_BUTTON_PIN = 33 
 
-def draw_dashboard(epd, trains, refresh_seconds):
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(SLEEP_BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(REFRESH_BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+display_awake = True
+manual_refresh = False
+
+def draw_dashboard(trains, refresh_seconds):
     image = Image.new('1', (constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT), 255)
     draw = ImageDraw.Draw(image)
 
@@ -44,58 +49,64 @@ def sleep_display(epd):
     time.sleep(0.5)
     epd.sleep()
 
+def sleep_button_callback(channel):
+    global display_awake
+    display_awake = not display_awake
+    if not display_awake:
+        sleep_display(epd)
+    else:
+        epd.init() 
+
+def refresh_button_callback(channel):
+    global manual_refresh
+    manual_refresh = True
+
 def main():
+    global epd
     epd = epd4in2_V2.EPD()
     epd.init()
     epd.Clear()
 
+    # Setup button event detection
+    GPIO.add_event_detect(SLEEP_BUTTON_PIN, GPIO.FALLING,
+                          callback=sleep_button_callback, bouncetime=200)
+    GPIO.add_event_detect(REFRESH_BUTTON_PIN, GPIO.FALLING,
+                          callback=refresh_button_callback, bouncetime=200)
+
     last_api_fetch = time.time()
     trains = fetch_trains()
-    display_awake = True  
+    iterations = 0
 
     try:
         while True:
-            if GPIO.input(SLEEP_BTN_PIN) == GPIO.LOW:
-                # debounce
-                time.sleep(0.1)
-                if GPIO.input(SLEEP_BTN_PIN) == GPIO.LOW:
-                    display_awake = not display_awake
-                    if display_awake:
-                        epd.init()
-                        epd.Clear()
-                    else:
-                        sleep_display(epd)
-                    # avoid multiple toggles
-                    time.sleep(0.5)
-
-            # asleep, don't update
-            if not display_awake:
-                time.sleep(0.5)
-                continue  
-
             now = time.time()
             elapsed = int(now - last_api_fetch)
 
-            if elapsed >= config.REFRESH_INTERVAL:
+            # refresh automatically or manually (but only if display is awake)
+            if elapsed >= config.REFRESH_INTERVAL or (manual_refresh and display_awake):
+                print("Refreshing train data...")
                 last_api_fetch = now
                 trains = fetch_trains()
                 elapsed = 0
-
-            if config.DEBUG:
-                trains = fetch_trains()
+                manual_refresh = False  # reset after refresh
 
             refresh_seconds = config.REFRESH_INTERVAL - elapsed
-            image = draw_dashboard(epd, trains, refresh_seconds)
-            epd.display_Partial(epd.getbuffer(image))  
-            time.sleep(1)
+
+            # Only update display if awake
+            if display_awake and iterations == 0:
+                print("Updating display...")
+                image = draw_dashboard(trains, refresh_seconds)
+                epd.display_Partial(epd.getbuffer(image))
+
+            iterations = (iterations + 1) % 5 
+            time.sleep(0.1) 
 
     except KeyboardInterrupt:
         print("Exiting... putting display to sleep")
 
     finally:
         sleep_display(epd)
-        GPIO.cleanup()  
-
+        GPIO.cleanup()
 
 if __name__ == "__main__":
     main()
