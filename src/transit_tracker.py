@@ -51,6 +51,8 @@ def sleep_display(epd):
 
 def sleep_button_callback(channel):
     global display_awake
+
+    print("Sleep button pressed")
     display_awake = not display_awake
     if not display_awake:
         sleep_display(epd)
@@ -59,6 +61,8 @@ def sleep_button_callback(channel):
 
 def refresh_button_callback(channel):
     global manual_refresh
+
+    print("Manual refresh triggered")
     manual_refresh = True
 
 def main():
@@ -96,7 +100,6 @@ def main():
 
             # Only update display if awake
             if display_awake and iterations == 0:
-                print("Updating display...")
                 image = draw_dashboard(trains, refresh_seconds)
                 epd.display_Partial(epd.getbuffer(image))
 
