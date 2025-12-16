@@ -5,15 +5,16 @@ from PIL import Image, ImageDraw
 from .waveshare_epd import epd4in2_V2
 
 from . import config
+from . import constants
 from .data.data_fetcher import fetch_trains
 from .views import header, train_anim, train_time, footer
 
 
 def draw_dashboard(epd, trains, refresh_seconds):
-    image = Image.new('1', (config.SCREEN_WIDTH, config.SCREEN_HEIGHT), 255)
+    image = Image.new('1', (constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT), 255)
     draw = ImageDraw.Draw(image)
 
-    padding = config.PADDING
+    padding = constants.PADDING
     y = padding
 
     # header
