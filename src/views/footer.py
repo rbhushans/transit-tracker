@@ -1,5 +1,5 @@
-import config
-import constants
+from .. import config
+from .. import constants
 
 # the footer component, which is just the refresh progress bar
 def draw_footer(draw, refresh_seconds: int) -> None:

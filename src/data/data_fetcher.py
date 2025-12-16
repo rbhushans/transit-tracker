@@ -1,6 +1,6 @@
 import datetime
 import time
-import config
+from .. import config
 import requests
 import xml.etree.ElementTree as ET
 

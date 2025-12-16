@@ -1,4 +1,4 @@
-import constants
+from .. import constants
 from PIL import ImageFont
 
 

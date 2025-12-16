@@ -1,5 +1,5 @@
-import config
-import constants
+from .. import config
+from .. import constants
 from PIL import ImageFont
 import datetime
 
