@@ -33,20 +33,28 @@ def fetch_trains():
 	# real API path 
 	resp = requests.get(config.API_URL)
 	resp.raise_for_status()
-	print("API response:", resp.text)
-	
-	root = ET.fromstring(resp.text)
-	print("ROOT", root)
-
+	data = resp.json()
+	print("API Response:", data)
 	trains = []
-	for visit in root.findall(".//MonitoredStopVisit"):
-		call = visit.find(".//MonitoredCall")
-		exp = call.find("ExpectedArrivalTime")
-		if exp is not None and exp.text:
-			dt = datetime.datetime.fromisoformat(exp.text.replace("Z", "+00:00"))
+	
+	visits = (
+        data
+        .get("ServiceDelivery", {})
+        .get("StopMonitoringDelivery", {})
+        .get("MonitoredStopVisit", [])
+    )
+	print("Visits:", visits)
+
+	for visit in visits:
+		journey = visit.get("MonitoredVehicleJourney", {})
+		call = journey.get("MonitoredCall", {})
+		exp_time = call.get("ExpectedArrivalTime")
+
+		if exp_time:
+			dt = datetime.datetime.fromisoformat(exp_time.replace("Z", "+00:00"))
 			trains.append({'expected_arrival': dt})
 			
-	print("Fetched trains:", trains)
+	print("Trains:", trains)
 
 	return sorted(trains, key=lambda t: t['expected_arrival'])[:2]
 
