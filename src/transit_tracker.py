@@ -89,7 +89,7 @@ def main():
             elapsed = int(now - last_api_fetch)
 
             # refresh automatically or manually (but only if display is awake)
-            if elapsed >= config.REFRESH_INTERVAL or (manual_refresh and display_awake):
+            if (elapsed >= config.REFRESH_INTERVAL or manual_refresh) and display_awake:
                 print("Refreshing train data...")
                 last_api_fetch = now
                 trains = fetch_trains()
