@@ -56,7 +56,7 @@ def main():
             refresh_seconds = config.REFRESH_INTERVAL - elapsed
             image = draw_dashboard(epd, trains, refresh_seconds)
             epd.display_Partial(epd.getbuffer(image))  
-            time.sleep(1)
+            time.sleep(2)
 
     except KeyboardInterrupt:
         print("Exiting... putting display to sleep")

@@ -2,12 +2,12 @@ import datetime
 import time
 from .. import config
 import requests
-import xml.etree.ElementTree as ET
+import json
 
 def fetch_trains():
 	now_utc = datetime.datetime.now(datetime.timezone.utc)
 
-    # mock data
+	# mock data
 	if config.DEBUG:
 		if not hasattr(fetch_trains, "debug_trains"):
 			fetch_trains.debug_trains = [
@@ -33,16 +33,32 @@ def fetch_trains():
 	# real API path 
 	resp = requests.get(config.API_URL)
 	resp.raise_for_status()
-	
-	root = ET.fromstring(resp.text)
-
+	data = json.loads(resp.content.decode("utf-8-sig"))
 	trains = []
-	for visit in root.findall(".//MonitoredStopVisit"):
-		call = visit.find(".//MonitoredCall")
-		exp = call.find("ExpectedArrivalTime")
-		if exp is not None and exp.text:
-			dt = datetime.datetime.fromisoformat(exp.text.replace("Z", "+00:00"))
-			trains.append({'expected_arrival': dt})
+	
+	visits = (
+        data
+        .get("ServiceDelivery", {})
+        .get("StopMonitoringDelivery", {})
+        .get("MonitoredStopVisit", [])
+    )
+
+	for visit in visits:
+		journey = visit.get("MonitoredVehicleJourney", {})
+		destination = journey.get("DestinationName")
+		
+		if config.DESTINATION_NAME:
+			# robust compare
+			if not destination or destination.strip().lower() != config.DESTINATION_NAME.strip().lower():
+				continue
+		call = journey.get("MonitoredCall", {})
+		exp_time = call.get("ExpectedArrivalTime")
+
+		if exp_time:
+			dt = datetime.datetime.fromisoformat(exp_time.replace("Z", "+00:00"))
+			trains.append({'expected_arrival': dt, 'destination': destination})
+			
+	print("Trains:", trains)
 
 	return sorted(trains, key=lambda t: t['expected_arrival'])[:2]
 

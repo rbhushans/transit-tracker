@@ -5,6 +5,17 @@ import datetime
 from ..utils.draw_utils import draw_train_icon
 
 
+def _compute_rounded_minutes(now: datetime.datetime, expected: datetime.datetime) -> int:
+    delta = (expected - now).total_seconds()
+    if delta <= 0:
+        return 0
+    mins = int(delta // 60)
+    secs = delta - (mins * 60)
+    if secs >= 30:
+        mins += 1
+    return mins
+
+
 def draw_train_anim(draw, y: int, trains: list) -> int:
     padding = constants.PADDING
     main_h = constants.SCREEN_HEIGHT - y - constants.MAIN_BOTTOM_PADDING
@@ -12,7 +23,7 @@ def draw_train_anim(draw, y: int, trains: list) -> int:
 
     now = datetime.datetime.now(datetime.timezone.utc)
     for t in trains:
-        t['minutes'] = max(int((t['expected_arrival'] - now).total_seconds() // 60), 0)
+        t['minutes'] = _compute_rounded_minutes(now, t['expected_arrival'])
 
     line_y = y + constants.LINE_Y_OFFSET
     start_x = padding + constants.START_X_OFFSET
