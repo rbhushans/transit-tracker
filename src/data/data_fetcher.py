@@ -2,7 +2,7 @@ import datetime
 import time
 from .. import config
 import requests
-import xml.etree.ElementTree as ET
+import json
 
 def fetch_trains():
 	now_utc = datetime.datetime.now(datetime.timezone.utc)
@@ -33,7 +33,7 @@ def fetch_trains():
 	# real API path 
 	resp = requests.get(config.API_URL)
 	resp.raise_for_status()
-	data = resp.json()
+	data = json.loads(resp.content.decode("utf-8-sig"))
 	print("API Response:", data)
 	trains = []
 	
