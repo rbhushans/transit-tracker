@@ -103,7 +103,7 @@ def main():
                 image = draw_dashboard(trains, refresh_seconds)
                 epd.display_Partial(epd.getbuffer(image))
 
-            iterations = (iterations + 1) % 5 
+            iterations = (iterations + 1) % 20 
             time.sleep(0.1) 
 
     except KeyboardInterrupt:
