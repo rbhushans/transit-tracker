@@ -1,5 +1,5 @@
 # flag to disable network fetches, and use mock data 
-DEBUG = True
+DEBUG = False
 
 # API fetch URL for SFMTA transit data
 API_KEY = "YOUR_API_KEY" # IMPORTANT - DO NOT COMMIT

@@ -7,7 +7,7 @@ import xml.etree.ElementTree as ET
 def fetch_trains():
 	now_utc = datetime.datetime.now(datetime.timezone.utc)
 
-    # mock data
+	# mock data
 	if config.DEBUG:
 		if not hasattr(fetch_trains, "debug_trains"):
 			fetch_trains.debug_trains = [
@@ -33,8 +33,10 @@ def fetch_trains():
 	# real API path 
 	resp = requests.get(config.API_URL)
 	resp.raise_for_status()
+	print("API response:", resp.text)
 	
 	root = ET.fromstring(resp.text)
+	print("ROOT", root)
 
 	trains = []
 	for visit in root.findall(".//MonitoredStopVisit"):
@@ -43,6 +45,8 @@ def fetch_trains():
 		if exp is not None and exp.text:
 			dt = datetime.datetime.fromisoformat(exp.text.replace("Z", "+00:00"))
 			trains.append({'expected_arrival': dt})
+			
+	print("Fetched trains:", trains)
 
 	return sorted(trains, key=lambda t: t['expected_arrival'])[:2]
 
