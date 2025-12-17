@@ -34,7 +34,6 @@ def fetch_trains():
 	resp = requests.get(config.API_URL)
 	resp.raise_for_status()
 	data = json.loads(resp.content.decode("utf-8-sig"))
-	print("API Response:", data)
 	trains = []
 	
 	visits = (
@@ -43,7 +42,6 @@ def fetch_trains():
         .get("StopMonitoringDelivery", {})
         .get("MonitoredStopVisit", [])
     )
-	print("Visits:", visits)
 
 	for visit in visits:
 		journey = visit.get("MonitoredVehicleJourney", {})
