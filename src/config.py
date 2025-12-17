@@ -10,7 +10,7 @@ DESTINATION_NAME = "King St & 4th St"
 API_URL = f"https://api.511.org/transit/StopMonitoring?api_key={API_KEY}&agency={AGENCY}&stopcode={STOP_CODE}"
 
 # How often we refresh the data (seconds). Transit data has strict rate limits.
-REFRESH_INTERVAL = 75  
+REFRESH_INTERVAL = 120  
 
 # The maximum number of minutes to show for incoming trains on the train animation
 MAX_TRAIN_MINUTES = 10
