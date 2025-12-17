@@ -47,12 +47,18 @@ def fetch_trains():
 
 	for visit in visits:
 		journey = visit.get("MonitoredVehicleJourney", {})
+		destination = journey.get("DestinationName")
+		
+		if config.DESTINATION_NAME:
+			# robust compare
+			if not destination or destination.strip().lower() != config.DESTINATION_NAME.strip().lower():
+				continue
 		call = journey.get("MonitoredCall", {})
 		exp_time = call.get("ExpectedArrivalTime")
 
 		if exp_time:
 			dt = datetime.datetime.fromisoformat(exp_time.replace("Z", "+00:00"))
-			trains.append({'expected_arrival': dt})
+			trains.append({'expected_arrival': dt, 'destination': destination})
 			
 	print("Trains:", trains)
 

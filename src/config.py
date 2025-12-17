@@ -5,6 +5,8 @@ DEBUG = False
 API_KEY = "YOUR_API_KEY" # IMPORTANT - DO NOT COMMIT
 AGENCY = "SF"
 STOP_CODE = "15194"
+# optional: filter by destination name. Set to None to disable
+DESTINATION_NAME = "King St & 4th St"
 API_URL = f"https://api.511.org/transit/StopMonitoring?api_key={API_KEY}&agency={AGENCY}&stopcode={STOP_CODE}"
 
 # How often we refresh the data (seconds). Transit data has strict rate limits.
