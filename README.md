@@ -154,7 +154,7 @@ https://api.511.org/transit/StopMonitoring?api_key=YOUR_API_KEY&agency=SF&stopco
 
 ## Configuring the Code
 
-At this point, you can now configure the transit tracker for your own usage!
+At this point, you can now configure the transit tracker for your own usage! Note that for probably most cases, you will need to make some changes to the data fetching - it's setup in a somewhat abstracted way, but every stop and every line (and what every person cares about) will all be different.
 
 - DEBUG - This flag determines whether we use fake data, or actually make API calls. Note that 511.org transit data has strict rate limiting - so be careful!
 - API_KEY - Your API key from 511.org - make sure not to commit this or make this publicly available.
@@ -165,6 +165,7 @@ At this point, you can now configure the transit tracker for your own usage!
 - MAX_TRAIN_MINUTES - The scale of the train animation. A larger value will allow a train to show up sooner (e.g. if you set it to 20, a train 18 minutes away will be visible). I set it to 10 because when you get to larger values, the scaling becomes a bit odd where you really want the visual granualrity at smaller numbers - the difference between 17 and 18 minutes is not much
 - HEADER_LABEL - Single character denoting the line. With some font size and position adjusting, you can probably make this work for 2 or more digits
 - HEADER_DESTINATION_LABEL - The destination - in my case "downtown"
+- DESTINATION_NAME - In some cases, a single stop may serve multiple destinations - add this filter if you want to filter to a certain destination. Set to None otherwise.
 
 ## Buttons!
 
