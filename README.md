@@ -2,6 +2,8 @@
 
 This repo contains the code to run a small, fun transit tracking dashboard. This README overviews exactly what to buy and how to run this code to get your own tracking setup.
 
+![](images/full_device.jpeg)
+
 TK: Video of transit tracker
 
 ## Materials
@@ -57,6 +59,8 @@ Run `sudo raspi-config`, and then use arrow keys and Enter:
 Then run `sudo reboot`
 
 ## Assembling the Hardware
+
+![](images/pi_wiring.jpeg)
 
 At this point, you are able to SSH into the pi at any time. Now, turn off the pi by unplugging the power. We are going to connect the display to the pi. This part is extremely important to get right, and where I spent the most time.
 
@@ -175,6 +179,10 @@ If you would like to add a power and/or manual refresh button, use the following
 5. Now, switch your branch to "buttons", and run the main script.
 6. Try clicking the sleep button to see the display go to sleep, and click it again to wake it up.
 7. Try clicking the refresh button to see the progress tracker reset, and the data refresh on command
+
+![](images/button_wiring_1.jpeg)
+
+![](images/button_wiring_2.jpeg)
 
 \* Note - I use innies/outties above as a fun alternative to the (in my opinion) dated female/male terminology that may be a bit more ubiquitous in wiring.
 
