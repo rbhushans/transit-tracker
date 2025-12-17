@@ -1,0 +1,18 @@
+[Unit]
+Description=Transit Tracker Display
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=rbhushan
+WorkingDirectory=/home/rbhushan/transit-tracker
+ExecStart=/usr/bin/python3 -m src.transit_tracker
+Restart=on-failure
+RestartSec=5
+
+# Ensure GPIO & SPI access
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
