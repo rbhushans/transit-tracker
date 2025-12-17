@@ -4,13 +4,17 @@ import time
 from PIL import Image, ImageDraw
 from .waveshare_epd import epd4in2_V2
 import RPi.GPIO as GPIO
-
-
+import signal
 
 from . import config
 from . import constants
 from .data.data_fetcher import fetch_trains
 from .views import header, train_anim, train_time, footer
+
+def handle_sigterm(signum, frame):
+    raise KeyboardInterrupt()
+
+signal.signal(signal.SIGTERM, handle_sigterm)
 
 SLEEP_BUTTON_PIN = 40  
 REFRESH_BUTTON_PIN = 33 

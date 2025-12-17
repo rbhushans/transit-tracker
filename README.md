@@ -177,3 +177,40 @@ If you would like to add a power and/or manual refresh button, use the following
 7. Try clicking the refresh button to see the progress tracker reset, and the data refresh on command
 
 \* Note - I use innies/outties above as a fun alternative to the (in my opinion) dated female/male terminology that may be a bit more ubiquitous in wiring.
+
+## Autostart
+
+Once you've wrapped all development, it's time to enable the script to automatically start when turned on. This will make it so that you don't need to manually ssh into the Pi to start the script.
+
+Run the following to create and copy the service file
+
+```
+sudo cp ~/transit-tracker/transit-tracker.service /etc/systemd/system/
+```
+
+Then run the following sequentially to set the service up:
+
+```
+sudo systemctl daemon-reexec
+sudo systemctl daemon-reload
+sudo systemctl enable transit-tracker.service
+```
+
+Before rebooting, we can test the service:
+
+```
+# start the service - you should see the display working now
+sudo systemctl start transit-tracker.service
+
+# check status
+systemctl status transit-tracker.service
+
+# check logs
+journalctl -u transit-tracker.service -f
+```
+
+Finally, try rebooting:
+
+```
+sudo reboot
+```
