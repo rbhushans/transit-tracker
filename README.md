@@ -16,6 +16,13 @@ There are a lot of examples of people making similar dashboards, but nothing tha
 
 - [Micro SD Card](https://www.amazon.com/dp/B01LXR6EOA) - This micro SD card comes preloaded with the raspberry pi image. This isn't really necessary - you can buy a cheaper one, because we'll be reimaging it anyways to be safe
 
+### Optional
+
+The following materials are optional for this project - only needed if you would like to add a sleep button or a manual refresh button:
+
+- [Tactile Buttons](https://www.amazon.com/dp/B071KX71SV) - Simple tactile buttons. You can order other ones as well, anything would really work.
+- [Dupont Wires](https://www.amazon.com/dp/B077X99KX1) - Wires to connect the buttons to the Pi. If you want an easier method, you could use a breadboard
+
 ## Prepping the Pi
 
 Before we get to assmebling the hardware, we need to prepare the pi.
@@ -59,7 +66,7 @@ First, align your pi in "portrait", where the pins are to the right, and the pow
 3 4 \
 5 6 \
 ... \
-39 40
+39 40 \
 
 Plugin the 8-pin cable into your display first. Make sure to push it in ALL the way - you'll face some resistance but it can, and must, go all the way in. Note that each colored cable now maps to a different code (e.g. VCC, BUSY, etc).
 
@@ -154,3 +161,19 @@ At this point, you can now configure the transit tracker for your own usage!
 - MAX_TRAIN_MINUTES - The scale of the train animation. A larger value will allow a train to show up sooner (e.g. if you set it to 20, a train 18 minutes away will be visible). I set it to 10 because when you get to larger values, the scaling becomes a bit odd where you really want the visual granualrity at smaller numbers - the difference between 17 and 18 minutes is not much
 - HEADER_LABEL - Single character denoting the line. With some font size and position adjusting, you can probably make this work for 2 or more digits
 - HEADER_DESTINATION_LABEL - The destination - in my case "downtown"
+
+## Buttons!
+
+If you would like to add a power and/or manual refresh button, use the following instructions. Make sure the Pi is turned off while you do the wiring.
+
+1. See above for materials for buttons
+2. You will need two buttons, and 4 wires (innies\* on either side)
+3. First, connect the button to one end of each of the wires. The easiest way to do this is by inserting one of the hooks into the little slot at the head, and the other hook into the hole (see image below).
+4. Once you've connected the 4 wires to the two buttons, take each button + wire combo, and attach them to the following:
+   a. Sleep Button: Pins 39 and 40 (GND)
+   b. Manual Refresh Button: Pins 33 and 34 (GND)
+5. Now, switch your branch to "buttons", and run the main script.
+6. Try clicking the sleep button to see the display go to sleep, and click it again to wake it up.
+7. Try clicking the refresh button to see the progress tracker reset, and the data refresh on command
+
+\* Note - I use innies/outties above as a fun alternative to the (in my opinion) dated female/male terminology that may be a bit more ubiquitous in wiring.
