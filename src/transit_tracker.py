@@ -105,6 +105,7 @@ def main():
             # Only update display if awake
             if display_awake and iterations == 0:
                 image = draw_dashboard(trains, refresh_seconds)
+                image = image.rotate(180)
                 epd.display_Partial(epd.getbuffer(image))
 
             iterations = (iterations + 1) % 20 
