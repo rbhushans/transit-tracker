@@ -1,10 +1,13 @@
 # transit-tracker
 
+![](images/transit_tracker_demo.MOV)
+
 This repo contains the code to run a small, fun transit tracking dashboard. This README overviews exactly what to buy and how to run this code to get your own tracking setup.
 
-![](images/full_device.jpeg)
-
-TK: Video of transit tracker
+<p float="left">
+  <img src="images/final_front.jpeg" width="200" />
+  <img src="images/final_back.jpeg" width="200" /> 
+</p>
 
 ## Materials
 
