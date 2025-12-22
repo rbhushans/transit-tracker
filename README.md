@@ -1,7 +1,5 @@
 # transit-tracker
 
-![](https://github.com/rbhushans/transit-tracker/blob/main/images/transit_tracker_demo.MOV?raw=true)
-
 This repo contains the code to run a small, fun transit tracking dashboard. This README overviews exactly what to buy and how to run this code to get your own tracking setup.
 
 https://github.com/user-attachments/assets/50c992c5-0b70-4de5-b124-387cf5f8b368
@@ -14,7 +12,6 @@ https://github.com/user-attachments/assets/50c992c5-0b70-4de5-b124-387cf5f8b368
 ## Materials
 
 There are a lot of examples of people making similar dashboards, but nothing that was 1) exactly what I wanted and 2) provided the exact materials to buy. After a lot of trial and error, here's what you need:
-
 
 - [Raspberry Pi Zero 2 W](https://www.microcenter.com/product/683270/Raspberry_Pi_Zero_W_2_with_Headers) - This minimal, cheap version of the raspberry pi provides all the computational power that's needed for this project. It's important to get the pi with headers - otherwise you'll need to solder that yourself
 
