@@ -5,15 +5,12 @@ import datetime
 from ..utils.draw_utils import draw_train_icon
 
 
-def _compute_rounded_minutes(now: datetime.datetime, expected: datetime.datetime) -> int:
+def _compute_rounded_minutes(now: datetime.datetime, expected: datetime.datetime) -> tuple[int, float]:
     delta = (expected - now).total_seconds()
     if delta <= 0:
-        return 0
-    mins = int(delta // 60)
-    secs = delta - (mins * 60)
-    if secs >= 30:
-        mins += 1
-    return mins
+        return 0, delta
+    mins = int(delta // 60)  # floor division -> always round down
+    return mins, delta
 
 
 def draw_train_anim(draw, y: int, trains: list) -> int:
@@ -23,7 +20,9 @@ def draw_train_anim(draw, y: int, trains: list) -> int:
 
     now = datetime.datetime.now(datetime.timezone.utc)
     for t in trains:
-        t['minutes'] = _compute_rounded_minutes(now, t['expected_arrival'])
+        mins, secs = _compute_rounded_minutes(now, t['expected_arrival'])
+        t['minutes'] = mins
+        t['_secs_until'] = secs
 
     line_y = y + constants.LINE_Y_OFFSET
     start_x = padding + constants.START_X_OFFSET
@@ -36,8 +35,12 @@ def draw_train_anim(draw, y: int, trains: list) -> int:
         draw.line([x, line_y, x + 2, line_y], fill=0)
 
     for t in trains:
+        if t.get('_secs_until', 0) < -20:
+            continue
+
         if t['minutes'] > config.MAX_TRAIN_MINUTES:
             continue
+
         ratio = t['minutes'] / config.MAX_TRAIN_MINUTES
         cx = end_x - ratio * (end_x - start_x)
         cx = max(start_x + constants.TRAIN_ICON_BASE_OFFSET, min(cx, end_x))
