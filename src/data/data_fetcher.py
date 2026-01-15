@@ -63,17 +63,17 @@ def fetch_trains():
 	return _annotate_and_filter_trains(sorted(trains, key=lambda t: t['expected_arrival'])[:2])
 
 def _annotate_and_filter_trains(trains: list) -> list:
-    now_dt = datetime.datetime.now(datetime.timezone.utc)
-    for t in trains:
-        expected = t.get('expected_arrival')
-        if not expected:
-            t['minutes'] = 0
-            t['_secs_until'] = float('inf')
-            continue
-        secs = (expected - now_dt).total_seconds()
-        mins = int(secs // 60) if secs > 0 else 0
-        t['minutes'] = mins
-        t['_secs_until'] = secs
+	now_dt = datetime.datetime.now(datetime.timezone.utc)
+	for t in trains:
+		expected = t.get('expected_arrival')
+		if not expected:
+			t['minutes'] = 0
+			t['_secs_until'] = float('inf')
+			continue
+		secs = (expected - now_dt).total_seconds()
+		mins = int(secs // 60) if secs > 0 else 0
+		t['minutes'] = mins
+		t['_secs_until'] = secs
 
-    filtered = [t for t in trains if t.get('_secs_until', 0) >= -20 and t.get('minutes', 0) <= config.MAX_TRAIN_MINUTES]
-    return filtered
+	filtered = [t for t in trains if t.get('_secs_until', 0) >= -20]
+	return filtered
