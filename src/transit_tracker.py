@@ -5,6 +5,7 @@ from PIL import Image, ImageDraw
 from .waveshare_epd import epd4in2_V2
 import RPi.GPIO as GPIO
 import signal
+import traceback
 
 from . import config
 from . import constants
@@ -25,19 +26,24 @@ GPIO.setup(REFRESH_BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 display_awake = True
 manual_refresh = False
+full_refresh = False
+epd = None
 
 def draw_dashboard(trains, refresh_seconds):
-    image = Image.new('1', (constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT), 255)
+    image = Image.new(
+        '1',
+        (constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT),
+        255
+    )
     draw = ImageDraw.Draw(image)
 
-    padding = constants.PADDING
-    y = padding
+    y = constants.PADDING
 
     # header
     y += header.draw_header(draw, y)
 
     # main animation area
-    main_h = train_anim.draw_train_anim(draw, y, trains)
+    train_anim.draw_train_anim(draw, y, trains)
 
     # time elements
     train_time.draw_train_time(draw, y, trains)
@@ -47,11 +53,19 @@ def draw_dashboard(trains, refresh_seconds):
 
     return image
 
+def enter_partial_mode(epd):
+    epd.init_Partial()
+
 def sleep_display(epd):
     epd.init()
     epd.Clear()
     time.sleep(0.5)
     epd.sleep()
+
+def wake_display(epd):
+    epd.init()
+    epd.Clear()
+    enter_partial_mode(epd)
 
 def sleep_button_callback(channel):
     global display_awake
@@ -61,7 +75,7 @@ def sleep_button_callback(channel):
     if not display_awake:
         sleep_display(epd)
     else:
-        epd.init() 
+        wake_display(epd)
 
 def refresh_button_callback(channel):
     global manual_refresh
@@ -73,9 +87,12 @@ def main():
     global epd
     global display_awake
     global manual_refresh
+    global full_refresh
+
     epd = epd4in2_V2.EPD()
     epd.init()
     epd.Clear()
+    enter_partial_mode(epd)
 
     # Setup button event detection
     GPIO.add_event_detect(SLEEP_BUTTON_PIN, GPIO.FALLING,
@@ -97,6 +114,7 @@ def main():
                 print("Refreshing train data...")
                 last_api_fetch = now
                 trains = fetch_trains()
+                full_refresh = True
                 elapsed = 0
                 manual_refresh = False  # reset after refresh
 
@@ -106,7 +124,13 @@ def main():
             if display_awake and iterations == 0:
                 image = draw_dashboard(trains, refresh_seconds)
                 image = image.rotate(180)
-                epd.display_Partial(epd.getbuffer(image))
+                # full refresh if we've just fetched new train data
+                if full_refresh:
+                    epd.display(epd.getbuffer(image))
+                    enter_partial_mode(epd)
+                    full_refresh = False
+                else:
+                    epd.display_Partial(epd.getbuffer(image))
 
             iterations = (iterations + 1) % 20 
             time.sleep(0.1) 
@@ -119,4 +143,16 @@ def main():
         GPIO.cleanup()
 
 if __name__ == "__main__":
-    main()
+    while True:
+        try:
+            main()
+            break
+        except KeyboardInterrupt:
+            # allow clean exit on Ctrl-C / SIGTERM
+            break
+        except Exception:
+            print("Unhandled exception in transit-tracker:")
+            traceback.print_exc()
+            print("Retrying main loop in 2 seconds...")
+            time.sleep(2)
+            continue
