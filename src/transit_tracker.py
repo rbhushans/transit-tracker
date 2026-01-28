@@ -143,16 +143,4 @@ def main():
         GPIO.cleanup()
 
 if __name__ == "__main__":
-    while True:
-        try:
-            main()
-            break
-        except KeyboardInterrupt:
-            # allow clean exit on Ctrl-C / SIGTERM
-            break
-        except Exception:
-            print("Unhandled exception in transit-tracker:")
-            traceback.print_exc()
-            print("Retrying main loop in 2 seconds...")
-            time.sleep(2)
-            continue
+    main()
