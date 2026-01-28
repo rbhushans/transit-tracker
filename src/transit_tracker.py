@@ -53,9 +53,6 @@ def draw_dashboard(trains, refresh_seconds):
 
     return image
 
-def enter_partial_mode(epd):
-    epd.init_Partial()
-
 def sleep_display(epd):
     epd.init()
     epd.Clear()
@@ -65,7 +62,6 @@ def sleep_display(epd):
 def wake_display(epd):
     epd.init()
     epd.Clear()
-    enter_partial_mode(epd)
 
 def sleep_button_callback(channel):
     global display_awake
@@ -92,7 +88,8 @@ def main():
     epd = epd4in2_V2.EPD()
     epd.init()
     epd.Clear()
-    enter_partial_mode(epd)
+    # initially, we want a full refresh
+    full_refresh = True
 
     # Setup button event detection
     GPIO.add_event_detect(SLEEP_BUTTON_PIN, GPIO.FALLING,
@@ -127,7 +124,6 @@ def main():
                 # full refresh if we've just fetched new train data
                 if full_refresh:
                     epd.display(epd.getbuffer(image))
-                    enter_partial_mode(epd)
                     full_refresh = False
                 else:
                     epd.display_Partial(epd.getbuffer(image))
