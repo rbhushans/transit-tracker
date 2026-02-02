@@ -123,6 +123,7 @@ def main():
                 image = image.rotate(180)
                 # full refresh if we've just fetched new train data
                 if full_refresh:
+                    epd.Clear()
                     epd.display(epd.getbuffer(image))
                     full_refresh = False
                 else:
