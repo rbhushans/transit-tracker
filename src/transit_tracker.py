@@ -97,40 +97,53 @@ def main():
     GPIO.add_event_detect(REFRESH_BUTTON_PIN, GPIO.FALLING,
                           callback=refresh_button_callback, bouncetime=200)
 
-    last_api_fetch = time.time()
-    trains = fetch_trains()
+    # last_api_fetch = 0 forces a fetch on the first loop iteration. Keeping the
+    # fetch inside the loop (and inside the try below) means a failed fetch can
+    # never crash the process before the dashboard is ever drawn.
+    last_api_fetch = 0
+    trains = []
     iterations = 0
 
     try:
         while True:
-            now = time.time()
-            elapsed = int(now - last_api_fetch)
+            try:
+                now = time.time()
+                elapsed = int(now - last_api_fetch)
 
-            # refresh automatically or manually (but only if display is awake)
-            if (elapsed >= config.REFRESH_INTERVAL or manual_refresh) and display_awake:
-                print("Refreshing train data...")
-                last_api_fetch = now
-                trains = fetch_trains()
-                full_refresh = True
-                elapsed = 0
-                manual_refresh = False  # reset after refresh
+                # refresh automatically or manually (but only if display is awake)
+                if (elapsed >= config.REFRESH_INTERVAL or manual_refresh) and display_awake:
+                    print("Refreshing train data...")
+                    last_api_fetch = now
+                    trains = fetch_trains()
+                    full_refresh = True
+                    elapsed = 0
+                    manual_refresh = False  # reset after refresh
 
-            refresh_seconds = config.REFRESH_INTERVAL - elapsed
+                refresh_seconds = max(0, config.REFRESH_INTERVAL - elapsed)
 
-            # Only update display if awake
-            if display_awake and iterations == 0:
-                image = draw_dashboard(trains, refresh_seconds)
-                image = image.rotate(180)
-                # full refresh if we've just fetched new train data
-                if full_refresh:
-                    epd.Clear()
-                    epd.display(epd.getbuffer(image))
-                    full_refresh = False
-                else:
-                    epd.display_Partial(epd.getbuffer(image))
+                # Only update display if awake
+                if display_awake and iterations == 0:
+                    image = draw_dashboard(trains, refresh_seconds)
+                    image = image.rotate(180)
+                    # full refresh if we've just fetched new train data
+                    if full_refresh:
+                        epd.Clear()
+                        epd.display(epd.getbuffer(image))
+                        full_refresh = False
+                    else:
+                        epd.display_Partial(epd.getbuffer(image))
 
-            iterations = (iterations + 1) % 20 
-            time.sleep(0.1) 
+                iterations = (iterations + 1) % 20
+                time.sleep(0.1)
+
+            except KeyboardInterrupt:
+                raise
+            except Exception:
+                # A transient failure (display glitch, unexpected data, etc.)
+                # must not kill the process and trigger a systemd restart loop.
+                traceback.print_exc()
+                print("Recovered from error; continuing in 2s...")
+                time.sleep(2)
 
     except KeyboardInterrupt:
         print("Exiting... putting display to sleep")
