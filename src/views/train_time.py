@@ -1,12 +1,16 @@
 from .. import constants
 from PIL import ImageFont
 
+# Load fonts once at import rather than on every frame (saves CPU and SD reads).
+_BIG_FONT = ImageFont.truetype(constants.FONT_PATH_BOLD, constants.TIME_BIG_FONT_SIZE)
+_MIN_FONT = ImageFont.truetype(constants.FONT_PATH_BOLD, constants.TIME_MIN_FONT_SIZE)
+
 
 def draw_train_time(draw, y: int, trains: list) -> None:
     if not trains:
         return
-    big_font = ImageFont.truetype(constants.FONT_PATH_BOLD, constants.TIME_BIG_FONT_SIZE)
-    min_font = ImageFont.truetype(constants.FONT_PATH_BOLD, constants.TIME_MIN_FONT_SIZE)
+    big_font = _BIG_FONT
+    min_font = _MIN_FONT
 
     mins = str(trains[0]['minutes'])
     bw = draw.textbbox((0, 0), mins, font=big_font)[2]

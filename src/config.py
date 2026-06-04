@@ -10,7 +10,15 @@ DESTINATION_NAME = "King St & 4th St"
 API_URL = f"https://api.511.org/transit/StopMonitoring?api_key={API_KEY}&agency={AGENCY}&stopcode={STOP_CODE}"
 
 # How often we refresh the data (seconds). Transit data has strict rate limits.
-REFRESH_INTERVAL = 120  
+REFRESH_INTERVAL = 120
+
+# How often we redraw the screen while awake (seconds). Every refresh wears the
+# e-paper panel, so keep this as large as the progress-bar smoothness allows.
+DRAW_INTERVAL = 15
+
+# Do a full refresh after this many partial refreshes to clear the ghosting that
+# accumulates from partial updates on e-paper.
+MAX_PARTIAL_REFRESHES = 5
 
 # The maximum number of minutes to show for incoming trains on the train animation
 MAX_TRAIN_MINUTES = 10
