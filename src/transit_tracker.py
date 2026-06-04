@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import time
+import threading
 from PIL import Image, ImageDraw
 from .waveshare_epd import epd4in2_V2
 import RPi.GPIO as GPIO
@@ -27,7 +28,12 @@ GPIO.setup(REFRESH_BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 display_awake = True
 manual_refresh = False
 full_refresh = False
+toggle_sleep = False
 epd = None
+
+# Set by GPIO callbacks to wake the main loop immediately on a button press,
+# so the loop can sleep until the next scheduled redraw instead of busy-polling.
+wake_event = threading.Event()
 
 def draw_dashboard(trains, refresh_seconds):
     image = Image.new(
@@ -64,26 +70,28 @@ def wake_display(epd):
     epd.Clear()
 
 def sleep_button_callback(channel):
-    global display_awake
+    # Only raise a flag here. GPIO callbacks run on a separate thread, and
+    # touching the EPD's SPI bus from two threads at once corrupts transfers,
+    # so the actual sleep/wake display work is done by the main loop.
+    global toggle_sleep
 
     print("Sleep button pressed")
-    display_awake = not display_awake
-    if not display_awake:
-        sleep_display(epd)
-    else:
-        wake_display(epd)
+    toggle_sleep = True
+    wake_event.set()
 
 def refresh_button_callback(channel):
     global manual_refresh
 
     print("Manual refresh triggered")
     manual_refresh = True
+    wake_event.set()
 
 def main():
     global epd
     global display_awake
     global manual_refresh
     global full_refresh
+    global toggle_sleep
 
     epd = epd4in2_V2.EPD()
     epd.init()
@@ -101,40 +109,64 @@ def main():
     # fetch inside the loop (and inside the try below) means a failed fetch can
     # never crash the process before the dashboard is ever drawn.
     last_api_fetch = 0
+    last_draw = 0
+    partial_count = 0
     trains = []
-    iterations = 0
 
     try:
         while True:
             try:
                 now = time.time()
-                elapsed = int(now - last_api_fetch)
 
-                # refresh automatically or manually (but only if display is awake)
-                if (elapsed >= config.REFRESH_INTERVAL or manual_refresh) and display_awake:
+                # Handle the sleep button here (not in the GPIO callback) so all
+                # display/SPI access stays on this single thread.
+                if toggle_sleep:
+                    toggle_sleep = False
+                    display_awake = not display_awake
+                    if display_awake:
+                        wake_display(epd)
+                        full_refresh = True
+                        last_draw = 0
+                    else:
+                        sleep_display(epd)
+
+                # refresh data automatically or manually (only while awake)
+                if display_awake and (now - last_api_fetch >= config.REFRESH_INTERVAL or manual_refresh):
                     print("Refreshing train data...")
                     last_api_fetch = now
                     trains = fetch_trains()
                     full_refresh = True
-                    elapsed = 0
                     manual_refresh = False  # reset after refresh
 
-                refresh_seconds = max(0, config.REFRESH_INTERVAL - elapsed)
-
-                # Only update display if awake
-                if display_awake and iterations == 0:
+                # redraw on a fixed cadence (for the progress bar / clock), or
+                # immediately after a data refresh or a wake
+                if display_awake and (full_refresh or now - last_draw >= config.DRAW_INTERVAL):
+                    elapsed = int(now - last_api_fetch)
+                    refresh_seconds = max(0, config.REFRESH_INTERVAL - elapsed)
                     image = draw_dashboard(trains, refresh_seconds)
                     image = image.rotate(180)
-                    # full refresh if we've just fetched new train data
-                    if full_refresh:
+
+                    # full refresh after new data / on wake, or periodically to
+                    # clear the ghosting that builds up from partial refreshes
+                    if full_refresh or partial_count >= config.MAX_PARTIAL_REFRESHES:
                         epd.Clear()
                         epd.display(epd.getbuffer(image))
                         full_refresh = False
+                        partial_count = 0
                     else:
                         epd.display_Partial(epd.getbuffer(image))
+                        partial_count += 1
 
-                iterations = (iterations + 1) % 20
-                time.sleep(0.1)
+                    last_draw = now
+
+                # Sleep until the next scheduled redraw, or until a button press
+                # wakes us early. While asleep, wait indefinitely (no busy poll).
+                if display_awake:
+                    timeout = max(0, config.DRAW_INTERVAL - (time.time() - last_draw))
+                else:
+                    timeout = None
+                wake_event.wait(timeout)
+                wake_event.clear()
 
             except KeyboardInterrupt:
                 raise
