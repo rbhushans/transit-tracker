@@ -30,10 +30,16 @@ def fetch_trains():
 			key=lambda t: int((t['expected_arrival'] - now_utc).total_seconds() // 60)
 		)
 
-	# real API path 
-	resp = requests.get(config.API_URL)
-	resp.raise_for_status()
-	data = json.loads(resp.content.decode("utf-8-sig"))
+	# real API path
+	try:
+		resp = requests.get(config.API_URL, timeout=15)
+		resp.raise_for_status()
+		data = json.loads(resp.content.decode("utf-8-sig"))
+	except (requests.RequestException, ValueError) as e:
+		# network down, timeout, rate limit, or bad payload: keep showing the
+		# last known data instead of letting the exception crash the process
+		print(f"Train fetch failed ({e}); using last known data")
+		return getattr(fetch_trains, "last_good", [])
 	trains = []
 	
 	visits = (
@@ -60,5 +66,6 @@ def fetch_trains():
 			
 	print("Trains:", trains)
 
-	return sorted(trains, key=lambda t: t['expected_arrival'])[:2]
+	fetch_trains.last_good = sorted(trains, key=lambda t: t['expected_arrival'])[:2]
+	return fetch_trains.last_good
 

@@ -226,3 +226,33 @@ Finally, try rebooting:
 ```
 sudo reboot
 ```
+
+## Resilience & SD-card hardening
+
+A network blip or a transit-API hiccup should never take the display down. The
+code is written so that:
+
+- `fetch_trains()` uses a request timeout and catches network/API errors,
+  returning the **last known data** instead of raising.
+- The main loop catches exceptions and keeps running rather than exiting (which
+  would let systemd restart the whole process in a tight loop).
+- The service backs off between restarts (`RestartSec=30`) and gives up after
+  repeated failures (`StartLimitBurst`) instead of looping forever.
+
+A tight restart loop is dangerous beyond just a blank screen: each restart
+writes logs to the SD card, and constant small writes are a leading cause of
+**SD-card corruption** on always-on Pis. To keep logs in RAM instead:
+
+```
+sudo mkdir -p /etc/systemd/journald.conf.d
+sudo cp ~/transit-tracker/journald-transit.conf /etc/systemd/journald.conf.d/transit.conf
+sudo systemctl restart systemd-journald
+```
+
+### If the Pi falls off Wi-Fi and won't come back
+
+If your router shows the Pi as offline and it won't rejoin a healthy, unchanged
+network even after power-cycling, the SD card is the most likely culprit
+(corruption often forces the filesystem read-only, which silently breaks Wi-Fi).
+There's no remote fix once it's off every network — you'll need the card in
+hand. Re-image it, re-provision Wi-Fi, and apply the hardening above.

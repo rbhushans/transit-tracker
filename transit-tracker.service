@@ -2,6 +2,11 @@
 Description=Transit Tracker Display
 After=network-online.target
 Wants=network-online.target
+# If the service fails 5 times within 5 minutes, give up instead of looping
+# forever — an endless restart loop spams the SD card with logs (a leading
+# cause of SD-card corruption on always-on Pis) and hammers the rate-limited API.
+StartLimitIntervalSec=300
+StartLimitBurst=5
 
 [Service]
 Type=simple
@@ -9,7 +14,9 @@ User=rbhushan
 WorkingDirectory=/home/rbhushan/transit-tracker
 ExecStart=/usr/bin/python3 -m src.transit_tracker
 Restart=on-failure
-RestartSec=5
+# Back off between restarts so a persistent failure can't pin the CPU, spam the
+# SD card with logs, or hammer the rate-limited transit API every few seconds.
+RestartSec=30
 
 # Ensure GPIO & SPI access
 Environment=PYTHONUNBUFFERED=1
