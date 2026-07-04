@@ -145,16 +145,31 @@ def main():
                     refresh_seconds = max(0, config.REFRESH_INTERVAL - elapsed)
                     image = draw_dashboard(trains, refresh_seconds)
                     image = image.rotate(180)
+                    buf = epd.getbuffer(image)
 
                     # full refresh after new data / on wake, or periodically to
                     # clear the ghosting that builds up from partial refreshes
                     if full_refresh or partial_count >= config.MAX_PARTIAL_REFRESHES:
+                        # Re-init first: partial refreshes leave the border /
+                        # update-control registers in partial mode, so without
+                        # this the "full" refresh doesn't fully clear. display()
+                        # also re-seeds the partial base by writing both RAM
+                        # banks (0x24 new-frame and 0x26 previous-frame).
+                        epd.init()
                         epd.Clear()
-                        epd.display(epd.getbuffer(image))
+                        epd.display(buf)
                         full_refresh = False
                         partial_count = 0
                     else:
-                        epd.display_Partial(epd.getbuffer(image))
+                        epd.display_Partial(buf)
+                        # display_Partial only writes the new-frame RAM (0x24) and
+                        # diffs it against the previous-frame RAM (0x26). Copy this
+                        # frame into 0x26 so the NEXT partial diffs against what's
+                        # actually on screen — otherwise every partial diffs against
+                        # the last full refresh and large changes (the progress bar)
+                        # leave ghost trails.
+                        epd.send_command(0x26)
+                        epd.send_data2(buf)
                         partial_count += 1
 
                     last_draw = now
