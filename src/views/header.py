@@ -3,8 +3,13 @@ from .. import constants
 from PIL import ImageFont
 import datetime
 
+# Load fonts once at import. Re-loading them from the SD card on every frame
+# wastes CPU and adds needless card reads on an always-on Pi.
+_HEADER_FONT = ImageFont.truetype(constants.FONT_PATH_BOLD, constants.HEADER_FONT_SIZE)
+_SMALL_FONT = ImageFont.truetype(constants.FONT_PATH_BOLD, constants.HEADER_SMALL_FONT_SIZE)
+
 def _draw_line_logo(draw, cx: int, cy: int) -> None:
-    n_font = ImageFont.truetype(constants.FONT_PATH_BOLD, constants.HEADER_FONT_SIZE)
+    n_font = _HEADER_FONT
     bbox = draw.textbbox((0, 0), config.HEADER_LABEL, font=n_font)
     ascent, _ = n_font.getmetrics()
     text_h = bbox[3] - bbox[1]
@@ -25,11 +30,11 @@ def _draw_line_logo(draw, cx: int, cy: int) -> None:
     )
 
 def _draw_destination(draw, x: int, y: int) -> None:
-    small_font = ImageFont.truetype(constants.FONT_PATH_BOLD, constants.HEADER_SMALL_FONT_SIZE)
+    small_font = _SMALL_FONT
     draw.text((x + constants.CIRCLE_RADIUS + 10, y + 8), config.HEADER_DESTINATION_LABEL, font=small_font, fill=0)
 
 def _draw_now_local(draw, y: int) -> None:
-    small_font = ImageFont.truetype(constants.FONT_PATH_BOLD, constants.HEADER_SMALL_FONT_SIZE)
+    small_font = _SMALL_FONT
     now_local = datetime.datetime.now().strftime("%-I:%M %p")
     tw = draw.textbbox((0, 0), now_local, font=small_font)[2]
     draw.text((constants.SCREEN_WIDTH - constants.PADDING - tw - 5, y + 8), now_local, font=small_font, fill=0)
