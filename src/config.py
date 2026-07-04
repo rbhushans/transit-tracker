@@ -16,9 +16,16 @@ REFRESH_INTERVAL = 120
 # e-paper panel, so keep this as large as the progress-bar smoothness allows.
 DRAW_INTERVAL = 15
 
-# Do a full refresh after this many partial refreshes to clear the ghosting that
-# accumulates from partial updates on e-paper.
-MAX_PARTIAL_REFRESHES = 5
+# Do a full (ghost-clearing) refresh only every Nth data fetch. Full refreshes
+# flash and wear the panel faster than partial refreshes, so now that partials
+# are ghost-free we space the full refreshes out. 1 = full refresh every fetch.
+FULL_REFRESH_EVERY_N_FETCHES = 2
+
+# Safety net: force a full refresh after this many consecutive partial refreshes,
+# in case something stops the fetch-driven full refresh above from happening. At
+# a 15s draw interval this is ~5 min; normal operation is driven by the setting
+# above, not this.
+MAX_PARTIAL_REFRESHES = 20
 
 # The maximum number of minutes to show for incoming trains on the train animation
 MAX_TRAIN_MINUTES = 10
