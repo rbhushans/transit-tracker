@@ -111,6 +111,7 @@ def main():
     last_api_fetch = 0
     last_draw = 0
     partial_count = 0
+    fetch_count = 0
     trains = []
 
     try:
@@ -135,7 +136,12 @@ def main():
                     print("Refreshing train data...")
                     last_api_fetch = now
                     trains = fetch_trains()
-                    full_refresh = True
+                    fetch_count += 1
+                    # Full-refresh only every Nth fetch; the fetches in between
+                    # redraw with (now ghost-free) partial refreshes, saving the
+                    # panel and avoiding the flash.
+                    if (fetch_count - 1) % config.FULL_REFRESH_EVERY_N_FETCHES == 0:
+                        full_refresh = True
                     manual_refresh = False  # reset after refresh
 
                 # redraw on a fixed cadence (for the progress bar / clock), or
